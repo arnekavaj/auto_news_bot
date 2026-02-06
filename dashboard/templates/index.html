@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Automotive Intel Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 18px; line-height: 1.35; }
+    h1 { margin-top: 0; }
+    .grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; }
+    .full { grid-column: 1 / -1; }
+    .muted { color: #666; font-size: 12px; }
+    a { text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin: 8px 0 0 18px; }
+    .badge { display:inline-block; padding:2px 8px; border:1px solid #ddd; border-radius:999px; font-size:12px; color:#444; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #eee; padding: 6px 8px; text-align: left; font-size: 14px; }
+  </style>
+</head>
+
+<body>
+  <h1>Automotive Intel Dashboard</h1>
+  <div class="muted">Powered by your pipeline (SQLite + Flask). Refresh this page after running <code>python main.py</code>.</div>
+
+  <div class="grid" style="margin-top:14px;">
+    <div class="card">
+      <h3>Articles per day (last 14 days)</h3>
+      <canvas id="perDay"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Top categories (last ~800 articles)</h3>
+      <canvas id="cats"></canvas>
+    </div>
+
+    <div class="card full">
+      <h3>🔥 Hot stories (multi-source coverage)</h3>
+      <ul>
+        {% for h in hot %}
+          <li>
+            <span class="badge">{{h.category}}</span>
+            <b><a href="{{h.url}}" target="_blank" rel="noopener">{{h.title}}</a></b>
+            — covered by <b>{{h.coverage}}</b> sources
+            <div class="muted">Sources:
+              {% for s in h.sources %}
+                {{ s }}{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+<div class="card">
+  <h3>🏢 Company velocity (this week vs last week)</h3>
+
+  <table>
+    <thead>
+      <tr><th>Company</th><th>This wk</th><th>Last wk</th><th>Δ</th><th>%</th></tr>
+    </thead>
+    <tbody>
+      {% for v in company_velocity %}
+      <tr>
+        <td>{{v.company}}</td>
+        <td>{{v.this_week}}</td>
+        <td>{{v.last_week}}</td>
+        <td>{{v.delta}}</td>
+        <td>{% if v.pct == 999 %}new spike{% else %}{{v.pct}}%{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="height:10px;"></div>
+
+  <h4 style="margin:8px 0 6px;">Top companies (last ~800)</h4>
+  <ul>
+    {% for name, count in top_companies %}
+      <li>{{name}} — {{count}}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+    <div class="card">
+      <h3>⚡ Velocity (this week vs last week)</h3>
+
+      <b>Category velocity</b>
+      <table>
+        <thead><tr><th>Category</th><th>This wk</th><th>Last wk</th><th>Δ</th><th>%</th></tr></thead>
+        <tbody>
+          {% for v in velocity.cat_velocity %}
+          <tr>
+            <td>{{v.category}}</td>
+            <td>{{v.this_week}}</td>
+            <td>{{v.last_week}}</td>
+            <td>{{v.delta}}</td>
+            <td>{% if v.pct == 999 %}new spike{% else %}{{v.pct}}%{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="height:10px;"></div>
+
+      <b>Top rising terms</b>
+      <ul>
+        {% for t in velocity.rising_terms %}
+          <li>{{t.term}}: {{t.this_week}} vs {{t.last_week}} (Δ {{t.delta}})</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>📈 Trends by category</h3>
+      {% for cat, terms in trends.items() %}
+        <div class="row" style="margin-bottom:8px;">
+          <span class="badge">{{cat}}</span>
+          <span>
+            {% for t in terms %}
+              {{t[0]}}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="card full">
+      <h3>🗂 Latest by category</h3>
+      {% for cat, arts in grouped.items() %}
+        <h4 style="margin-bottom:6px;">{{cat}}</h4>
+        <ul>
+          {% for a in arts %}
+            <li>
+              <b><a href="{{a.url}}" target="_blank" rel="noopener">{{a.title}}</a></b>
+              <div class="muted">{{a.source}}</div>
+              <div>{{a.summary}}</div>
+            </li>
+          {% endfor %}
+        </ul>
+        <hr/>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    const perDayCtx = document.getElementById('perDay');
+    new Chart(perDayCtx, {
+      type: 'line',
+      data: {
+        labels: {{ day_labels | tojson }},
+        datasets: [{
+          label: 'Articles',
+          data: {{ day_counts | tojson }},
+          tension: 0.2
+        }]
+      }
+    });
+
+    const catsCtx = document.getElementById('cats');
+    new Chart(catsCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ cat_labels | tojson }},
+        datasets: [{
+          label: 'Count',
+          data: {{ cat_values | tojson }}
+        }]
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+[
+    {
+      "name": "Electrek",
+      "url": "https://electrek.co/feed/",
+      "categories": ["EV", "Battery", "Policy"]
+    },
+    {
+      "name": "TechCrunch Mobility",
+      "url": "https://techcrunch.com/tag/mobility/feed/",
+      "categories": ["Software", "Autonomy", "Startups"]
+    },
+    {
+      "name": "Reuters Transport",
+      "url": "https://www.reuters.com/world/transport/rss",
+      "categories": ["OEM", "SupplyChain", "Policy"]
+    }
+  ]

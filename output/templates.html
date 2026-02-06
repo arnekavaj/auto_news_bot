@@ -1,0 +1,65 @@
+<h2>Automotive Intelligence Digest</h2>
+
+{% if hot_stories %}
+<h3>🔥 Hot stories (multi-source coverage)</h3>
+<ul>
+  {% for h in hot_stories %}
+    <li>
+      <b>{{h.title}}</b> ({{h.category}}) — covered by {{h.coverage}} sources<br/>
+      Sources:
+      {% for s in h.sources %}
+        {{ s }}{% if not loop.last %}, {% endif %}
+      {% endfor %}
+      <br/>
+      <a href="{{h.url}}">Read</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if velocity %}
+<h3>⚡ Velocity (this week vs last week)</h3>
+
+<b>Category velocity</b><br/>
+<ul>
+  {% for v in velocity.cat_velocity %}
+    <li>
+      {{v.category}}: {{v.this_week}} vs {{v.last_week}}
+      (Δ {{v.delta}}, {% if v.pct == 999 %}new spike{% else %}{{v.pct}}%{% endif %})
+    </li>
+  {% endfor %}
+</ul>
+
+<b>Top rising terms</b><br/>
+<ul>
+  {% for t in velocity.rising_terms %}
+    <li>{{t.term}}: {{t.this_week}} vs {{t.last_week}} (Δ {{t.delta }})</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if trends %}
+<h3>📈 Trends by category</h3>
+{% for cat, terms in trends.items() %}
+  <b>{{cat}}</b>:
+  {% for t in terms %}
+    {{ t[0] }}{% if not loop.last %}, {% endif %}
+  {% endfor %}
+  <br/>
+{% endfor %}
+{% endif %}
+
+<hr/>
+
+{% for cat, arts in grouped.items() %}
+<h3>{{cat}}</h3>
+<ul>
+{% for a in arts %}
+  <li>
+    <b>{{a.title}}</b><br/>
+    {{a.summary | replace("\n","<br/>") }}<br/>
+    <a href="{{a.url}}">Read</a>
+  </li>
+{% endfor %}
+</ul>
+{% endfor %}

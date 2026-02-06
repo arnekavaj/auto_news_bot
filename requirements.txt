@@ -1,0 +1,9 @@
+requests
+feedparser
+newspaper3k
+beautifulsoup4
+openai
+jinja2
+schedule
+flask
+python-dotenv
