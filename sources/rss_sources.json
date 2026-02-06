@@ -13,5 +13,25 @@
       "name": "Reuters Transport",
       "url": "https://www.reuters.com/world/transport/rss",
       "categories": ["OEM", "SupplyChain", "Policy"]
-    }
+    },
+    {
+      "name": "Automotive News",
+      "url": "https://www.autonews.com/rss.xml",
+      "categories": ["OEM"]
+    },
+    {"name":"Automotive World","url":"https://www.automotiveworld.com/feed/","category":"Industry"},
+    {"name":"Just Auto","url":"https://www.just-auto.com/feed/","category":"Industry"},
+    
+    {"name":"InsideEVs","url":"https://insideevs.com/rss/","category":"EV"},
+    {"name":"CleanTechnica","url":"https://cleantechnica.com/feed/","category":"EV"},
+    {"name":"Electrive","url":"https://www.electrive.com/feed/","category":"EV"},
+    
+    {"name":"The Verge Transportation","url":"https://www.theverge.com/rss/transportation/index.xml","category":"Mobility"},
+    {"name":"TechCrunch Transportation","url":"https://techcrunch.com/category/transportation/feed/","category":"Mobility"},
+    
+    {"name":"Battery Industry","url":"https://batteryindustry.tech/feed/","category":"Battery"},
+    {"name":"PV Magazine","url":"https://www.pv-magazine.com/feed/","category":"Battery"}
+  
+    
+    
   ]

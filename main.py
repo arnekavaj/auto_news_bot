@@ -1,5 +1,13 @@
+import os
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
+from datetime import datetime, timezone, timedelta
+
 import json
-from datetime import datetime, UTC
+from datetime import datetime, timezone
+
+
 
 from collections import defaultdict
 
@@ -13,17 +21,25 @@ from processing.companies import extract_companies
 from storage.db import init_db, normalize_title
 from output.email_builder import send_email
 from jinja2 import Template
-from dotenv import load_dotenv
-load_dotenv()
 
+
+def parse_iso_or_none(s: str):
+    if not s:
+        return None
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except:
+        return None
 
 
 
 def run_pipeline():
+    MAX_DAYS = int(os.getenv("MAX_ARTICLE_AGE_DAYS", "14"))
+    cutoff = datetime.now(timezone.utc) - timedelta(days=MAX_DAYS)
     conn = init_db()
     cur = conn.cursor()
 
-    fetched_at = datetime.now(UTC).isoformat()
+    fetched_at = datetime.now(timezone.utc).isoformat()
 
     with open("sources/rss_sources.json", encoding="utf-8") as f:
         sources = json.load(f)
@@ -36,6 +52,16 @@ def run_pipeline():
         fallback_cats = src.get("categories", [])
 
         for a in data:
+                    # Skip old articles
+            pub = a.get("published", "")
+            try:
+                pub_dt = datetime.fromisoformat(pub.replace("Z", "+00:00"))
+            except:
+                pub_dt = None
+
+            if pub_dt and pub_dt < cutoff:
+                continue
+
             cat = pick_category(a.get("title", ""), a.get("text", ""), fallback_cats)
             text = (a.get("text", "") or "")[:3000]
             summary = summarize(text) if text.strip() else "• (No text extracted)"
